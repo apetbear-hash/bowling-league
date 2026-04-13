@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bowling League Manager</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<header>
+  <div class="logo">&#127923; <span>Bowling League</span></div>
+  <nav>
+    <button class="tab-btn active" data-tab="teams">Teams</button>
+    <button class="tab-btn" data-tab="schedule">Schedule &amp; Scores</button>
+    <button class="tab-btn" data-tab="standings">Standings</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ===== TEAMS TAB ===== -->
+  <div id="tab-teams" class="tab-pane active">
+    <div class="section-header">
+      <h2>Teams</h2>
+      <button id="btn-add-team" class="btn btn-primary">+ Add Team</button>
+    </div>
+    <div id="teams-grid" class="teams-grid"></div>
+  </div>
+
+  <!-- ===== SCHEDULE & SCORES TAB ===== -->
+  <div id="tab-schedule" class="tab-pane">
+    <div class="section-header">
+      <h2>Schedule &amp; Scores</h2>
+      <div class="schedule-controls">
+        <label for="weeks-input">Weeks:</label>
+        <input type="number" id="weeks-input" min="1" max="52" placeholder="auto" />
+        <button id="btn-generate" class="btn btn-primary">&#9654; Generate Schedule</button>
+      </div>
+    </div>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:1rem">
+      Click any match to enter or edit scores. Each match awards up to 4 points (1 per game won + 1 for overall series).
+    </p>
+    <div id="schedule-list"></div>
+  </div>
+
+  <!-- ===== STANDINGS TAB ===== -->
+  <div id="tab-standings" class="tab-pane">
+    <div class="section-header">
+      <h2>Standings</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:center">#</th>
+            <th>Team</th>
+            <th>Played</th>
+            <th>W–L</th>
+            <th>Points</th>
+            <th>Game Avg</th>
+            <th>Series Avg</th>
+          </tr>
+        </thead>
+        <tbody id="standings-body">
+          <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:0.75rem">
+      Sorted by total points, then game average. A match win = earning more than 2 of 4 available points.
+    </p>
+  </div>
+
+</main>
+
+<!-- ===== TEAM MODAL ===== -->
+<div id="team-modal-backdrop" class="modal-backdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h3 id="team-modal-title">Add Team</h3>
+      <button id="team-modal-close" class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="team-name-input">Team Name</label>
+        <input type="text" id="team-name-input" placeholder="e.g. Pin Crushers" autocomplete="off" />
+      </div>
+      <div class="form-group">
+        <label>Members</label>
+        <div class="members-input-group">
+          <input type="text" id="member-input" placeholder="Member name" autocomplete="off" />
+          <button id="btn-add-member" class="btn btn-secondary">Add</button>
+        </div>
+        <div id="member-tags" class="member-tags"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="team-modal-cancel" class="btn btn-secondary">Cancel</button>
+      <button id="team-modal-save" class="btn btn-primary">Save Team</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCORE MODAL ===== -->
+<div id="score-modal-backdrop" class="modal-backdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h3 id="score-modal-title">Enter Scores</h3>
+      <button id="score-modal-close" class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="score-grid">
+        <!-- Header row -->
+        <div class="score-grid-header">Team</div>
+        <div class="score-grid-header">Game 1</div>
+        <div class="score-grid-header">Game 2</div>
+        <div class="score-grid-header">Game 3</div>
+        <!-- Team 1 -->
+        <div class="team-label" id="score-team1-label">Team 1</div>
+        <input type="number" id="t1g1" min="0" max="300" placeholder="—" />
+        <input type="number" id="t1g2" min="0" max="300" placeholder="—" />
+        <input type="number" id="t1g3" min="0" max="300" placeholder="—" />
+        <!-- Team 2 -->
+        <div class="team-label" id="score-team2-label">Team 2</div>
+        <input type="number" id="t2g1" min="0" max="300" placeholder="—" />
+        <input type="number" id="t2g2" min="0" max="300" placeholder="—" />
+        <input type="number" id="t2g3" min="0" max="300" placeholder="—" />
+      </div>
+
+      <div id="score-preview" class="score-preview"></div>
+    </div>
+    <div class="modal-footer">
+      <button id="score-modal-clear" class="btn btn-danger">Clear</button>
+      <button id="score-modal-cancel" class="btn btn-secondary">Cancel</button>
+      <button id="score-modal-save" class="btn btn-primary">Save Scores</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
