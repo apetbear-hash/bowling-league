@@ -10,16 +10,22 @@
 
 <header>
   <div class="logo">&#127923; <span>Bowling League</span></div>
+  <div class="league-bar">
+    <select id="league-select"><option value="">— select league —</option></select>
+    <button id="btn-manage-leagues" class="btn btn-ghost btn-sm" title="Manage leagues">&#9881;</button>
+  </div>
   <nav>
     <button class="tab-btn active" data-tab="teams">Teams</button>
-    <button class="tab-btn" data-tab="schedule">Schedule &amp; Scores</button>
+    <button class="tab-btn" data-tab="schedule">Schedule</button>
     <button class="tab-btn" data-tab="standings">Standings</button>
+    <button class="tab-btn" data-tab="averages">Averages</button>
+    <button class="tab-btn" data-tab="performers">Top&nbsp;Performers</button>
   </nav>
 </header>
 
 <main>
 
-  <!-- ===== TEAMS TAB ===== -->
+  <!-- ===== TEAMS ===== -->
   <div id="tab-teams" class="tab-pane active">
     <div class="section-header">
       <h2>Teams</h2>
@@ -28,58 +34,138 @@
     <div id="teams-grid" class="teams-grid"></div>
   </div>
 
-  <!-- ===== SCHEDULE & SCORES TAB ===== -->
+  <!-- ===== SCHEDULE ===== -->
   <div id="tab-schedule" class="tab-pane">
     <div class="section-header">
       <h2>Schedule &amp; Scores</h2>
       <div class="schedule-controls">
         <label for="weeks-input">Weeks:</label>
         <input type="number" id="weeks-input" min="1" max="52" placeholder="auto" />
-        <button id="btn-generate" class="btn btn-primary">&#9654; Generate Schedule</button>
+        <button id="btn-generate" class="btn btn-primary">&#9654; Generate</button>
       </div>
     </div>
-    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:1rem">
-      Click any match to enter or edit scores. Each match awards up to 4 points (1 per game won + 1 for overall series).
-    </p>
+    <p class="hint">Click a match to enter or edit scores. Each match awards up to 4 pts (1 per game won + 1 for series). Ties award 0.5 each.</p>
     <div id="schedule-list"></div>
   </div>
 
-  <!-- ===== STANDINGS TAB ===== -->
+  <!-- ===== STANDINGS ===== -->
   <div id="tab-standings" class="tab-pane">
-    <div class="section-header">
-      <h2>Standings</h2>
-    </div>
+    <div class="section-header"><h2>Standings</h2></div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th style="text-align:center">#</th>
+            <th class="center">#</th>
             <th>Team</th>
-            <th>Played</th>
-            <th>W–L</th>
-            <th>Points</th>
-            <th>Game Avg</th>
-            <th>Series Avg</th>
+            <th class="center">Played</th>
+            <th class="center">This&nbsp;Week</th>
+            <th class="center">Season W-L-T</th>
+            <th class="center">Points</th>
+            <th class="center">Game&nbsp;Avg</th>
           </tr>
         </thead>
         <tbody id="standings-body">
-          <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Loading…</td></tr>
+          <tr><td colspan="7" class="center text-muted" style="padding:2rem">Loading…</td></tr>
         </tbody>
       </table>
     </div>
-    <p style="color:var(--muted);font-size:0.8rem;margin-top:0.75rem">
-      Sorted by total points, then game average. A match win = earning more than 2 of 4 available points.
-    </p>
+    <div id="standings-summary" class="standings-summary" style="display:none"></div>
+  </div>
+
+  <!-- ===== AVERAGES ===== -->
+  <div id="tab-averages" class="tab-pane">
+    <div class="section-header"><h2>Bowler Averages</h2></div>
+    <p class="avgs-note">Running averages across all entered matches in this league.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Bowler</th>
+            <th>Team</th>
+            <th class="center">Gender</th>
+            <th class="center">Games</th>
+            <th class="center">Average</th>
+            <th class="center">Handicap</th>
+            <th class="center">Best Game</th>
+            <th class="center">Best Series</th>
+          </tr>
+        </thead>
+        <tbody id="averages-body">
+          <tr><td colspan="8" class="center text-muted" style="padding:2rem">No data yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== TOP PERFORMERS ===== -->
+  <div id="tab-performers" class="tab-pane">
+    <div class="performers-header">
+      <h2 style="flex:1">Top Performers</h2>
+      <div class="toggle-group" id="perf-type-toggle">
+        <button class="toggle-btn active" data-type="scratch">Scratch</button>
+        <button class="toggle-btn" data-type="handicap">Handicap</button>
+      </div>
+    </div>
+    <div id="performers-grid" class="performers-grid"></div>
   </div>
 
 </main>
 
+<!-- ===== LEAGUES MODAL ===== -->
+<div id="leagues-modal-backdrop" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Manage Leagues</h3>
+      <button id="leagues-modal-close" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="leagues-list" class="league-list"></div>
+      <div style="margin-bottom:0.5rem">
+        <button id="btn-load-template" class="btn btn-secondary btn-sm" style="width:100%">&#127381; Load Template League (10 teams · 3 bowlers · 10 weeks)</button>
+      </div>
+      <div class="leagues-subform" id="league-subform">
+        <h4 id="league-subform-title">New League</h4>
+        <div class="form-group">
+          <label for="league-name-input">League Name</label>
+          <input type="text" id="league-name-input" placeholder="e.g. Friday Night Scratch" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label>Handicap</label>
+          <div class="toggle-switch-row">
+            <label class="toggle-switch">
+              <input type="checkbox" id="league-hdcp-toggle" />
+              <span class="toggle-slider"></span>
+            </label>
+            <span style="font-size:0.875rem">Handicap league</span>
+          </div>
+          <div class="hdcp-fields form-row" id="hdcp-fields">
+            <div class="form-group">
+              <label>Base Score</label>
+              <input type="number" id="league-hdcp-base" value="200" min="100" max="300" />
+              <div class="form-hint">Typically 200 or 220</div>
+            </div>
+            <div class="form-group">
+              <label>Percentage</label>
+              <input type="number" id="league-hdcp-pct" value="80" min="1" max="100" />
+              <div class="form-hint">e.g. 80 = 80%</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+          <button id="league-subform-cancel" class="btn btn-ghost btn-sm">Cancel</button>
+          <button id="league-subform-save" class="btn btn-primary btn-sm">Save League</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== TEAM MODAL ===== -->
 <div id="team-modal-backdrop" class="modal-backdrop">
-  <div class="modal" role="dialog" aria-modal="true">
+  <div class="modal">
     <div class="modal-header">
       <h3 id="team-modal-title">Add Team</h3>
-      <button id="team-modal-close" class="modal-close" aria-label="Close">&times;</button>
+      <button id="team-modal-close" class="modal-close">&times;</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -87,12 +173,9 @@
         <input type="text" id="team-name-input" placeholder="e.g. Pin Crushers" autocomplete="off" />
       </div>
       <div class="form-group">
-        <label>Members</label>
-        <div class="members-input-group">
-          <input type="text" id="member-input" placeholder="Member name" autocomplete="off" />
-          <button id="btn-add-member" class="btn btn-secondary">Add</button>
-        </div>
-        <div id="member-tags" class="member-tags"></div>
+        <label>Bowlers</label>
+        <div id="bowler-rows"></div>
+        <button id="btn-add-bowler-row" class="btn btn-ghost btn-sm" style="margin-top:0.4rem">+ Add Bowler</button>
       </div>
     </div>
     <div class="modal-footer">
@@ -104,43 +187,23 @@
 
 <!-- ===== SCORE MODAL ===== -->
 <div id="score-modal-backdrop" class="modal-backdrop">
-  <div class="modal" role="dialog" aria-modal="true">
+  <div class="modal wide">
     <div class="modal-header">
       <h3 id="score-modal-title">Enter Scores</h3>
-      <button id="score-modal-close" class="modal-close" aria-label="Close">&times;</button>
+      <button id="score-modal-close" class="modal-close">&times;</button>
     </div>
-    <div class="modal-body">
-      <div class="score-grid">
-        <!-- Header row -->
-        <div class="score-grid-header">Team</div>
-        <div class="score-grid-header">Game 1</div>
-        <div class="score-grid-header">Game 2</div>
-        <div class="score-grid-header">Game 3</div>
-        <!-- Team 1 -->
-        <div class="team-label" id="score-team1-label">Team 1</div>
-        <input type="number" id="t1g1" min="0" max="300" placeholder="—" />
-        <input type="number" id="t1g2" min="0" max="300" placeholder="—" />
-        <input type="number" id="t1g3" min="0" max="300" placeholder="—" />
-        <!-- Team 2 -->
-        <div class="team-label" id="score-team2-label">Team 2</div>
-        <input type="number" id="t2g1" min="0" max="300" placeholder="—" />
-        <input type="number" id="t2g2" min="0" max="300" placeholder="—" />
-        <input type="number" id="t2g3" min="0" max="300" placeholder="—" />
-      </div>
-
-      <div id="score-preview" class="score-preview"></div>
+    <div class="modal-body" id="score-modal-body">
+      <!-- Dynamically built -->
     </div>
     <div class="modal-footer">
-      <button id="score-modal-clear" class="btn btn-danger">Clear</button>
+      <button id="score-modal-clear"  class="btn btn-danger">Clear</button>
       <button id="score-modal-cancel" class="btn btn-secondary">Cancel</button>
-      <button id="score-modal-save" class="btn btn-primary">Save Scores</button>
+      <button id="score-modal-save"   class="btn btn-primary">Save Scores</button>
     </div>
   </div>
 </div>
 
-<!-- Toast container -->
 <div id="toast-container"></div>
-
 <script src="/static/app.js"></script>
 </body>
 </html>
